@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FutsalType {
+  FiveA
+  SevenA
+}
+
+enum Payment {
+  Pending
+  Paid
+}
+
+enum BookingStatus {
+  Pending
+  Confirmed
+  Cancelled
+}
+
+enum RequestStatus {
+  Pending
+  Accepted
+  Cancelled
+}
+
+enum MatchStatus {
+  Cancelled
+  Scheduled
+}
+
+model Roles {
+  id    Int     @id @default(autoincrement())
+  title String
+  Users Users[]
+
+  @@map("roles")
+}
+
+model Users {
+  id         Int     @id @default(autoincrement())
+  googleId   String? @unique
+  facebookId String? @unique
+  name       String
+  email      String  @unique
+  phone      String  @unique
+  image      String?
+  password   String  @unique
+  address    String
+
+  roleId       Int
+  roles        Roles         @relation(references: [id], fields: [roleId])
+  Futsals      Futsals?
+  Bookings     Bookings[]
+  MatchRequest MatchRequest[]
+
+  organizedMatches Matches[] @relation("OrganizerRelation")
+  opponentMatches  Matches[] @relation("OpponentRelation")
+
+  @@map("users")
+}
+
+model Futsals {
+  id        Int        @id @default(autoincrement())
+  name      String
+  phone     String     @unique
+  address   String
+  type      FutsalType
+  startTime DateTime   @db.Time
+  endTime   DateTime   @db.Time
+  amenities  String[]
+  images    String[]
+  stdPrice  Int
+  rating    Decimal    @db.Decimal(10, 1)
+  pan       String   @unique
+
+  userId     Int          @unique
+  users      Users        @relation(references: [id], fields: [userId])
+  PriceLists PriceLists[]
+  Bookings   Bookings[]
+  timeSlots  TimeSlots[]
+
+  @@map("futsals")
+}
+
+model FutsalImage {
+  id       Int    @id @default(autoincrement())
+  url      String
+  futsalId Int
+  futsal   Futsals @relation(fields: [futsalId], references: [id])
+}
+
+model PriceLists {
+  id        Int      @id @default(autoincrement())
+  startTime DateTime @db.Time
+  endTime   DateTime @db.Time
+  dayOfWeek String
+  price     Int
+  futsalId  Int
+  futsals   Futsals  @relation(references: [id], fields: [futsalId])
+
+  @@map("price_lists")
+}
+
+model Bookings {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  users  Users @relation(references: [id], fields: [userId])
+
+  futsalId Int
+  futsals  Futsals @relation(references: [id], fields: [futsalId])
+
+  bookDate      DateTime      @db.Date
+  startTime     DateTime      @db.Time
+  endTime       DateTime      @db.Time
+  type          FutsalType
+  price         Int
+  confirmation  BookingStatus @default(Pending)
+  paymentStatus Payment       @default(Pending)
+
+  @@map("bookings")
+}
+
+model TimeSlots {
+  id Int @id @default(autoincrement())
+
+  startTime  DateTime   @db.Time
+  endTime    DateTime   @db.Time
+  date       DateTime   @db.Date
+  price      Int
+  futsalType FutsalType
+  futsalId   Int
+  futsals    Futsals    @relation(references: [id], fields: [futsalId])
+}
+
+model MatchRequest {
+  id         Int           @id @default(autoincrement())
+  userId     Int
+  users      Users         @relation(references: [id], fields: [userId])
+  futsalName String
+  futsalType FutsalType
+  matchDate  DateTime      @map("matchDate") @db.Date
+  startTime  DateTime      @db.Time
+  endTime    DateTime      @db.Time
+  matchType  String
+  status     RequestStatus @default(Pending)
+}
+
+model Matches {
+  id         Int         @id @default(autoincrement())
+  futsalName String
+  futsalType FutsalType
+  matchType  String
+  matchDate  DateTime    @map("matchDate") @db.Date
+  startTime  DateTime    @db.Time
+  endTime    DateTime    @db.Time
+  status     MatchStatus @default(Scheduled)
+
+  organizerId Int
+  organizer   Users @relation("OrganizerRelation", references: [id], fields: [organizerId])
+  opponentId  Int
+  opponent    Users @relation("OpponentRelation", references: [id], fields: [opponentId])
+}

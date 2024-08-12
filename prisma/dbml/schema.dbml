@@ -1,0 +1,166 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table roles {
+  id Int [pk, increment]
+  title String [not null]
+  Users users [not null]
+}
+
+Table users {
+  id Int [pk, increment]
+  googleId String [unique]
+  facebookId String [unique]
+  name String [not null]
+  email String [unique, not null]
+  phone String [unique, not null]
+  image String
+  password String [unique, not null]
+  address String [not null]
+  roleId Int [not null]
+  roles roles [not null]
+  Futsals futsals
+  Bookings bookings [not null]
+  MatchRequest MatchRequest [not null]
+  organizedMatches Matches [not null]
+  opponentMatches Matches [not null]
+}
+
+Table futsals {
+  id Int [pk, increment]
+  name String [not null]
+  phone String [unique, not null]
+  address String [not null]
+  type FutsalType [not null]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  amenities String[] [not null]
+  stdPrice Int [not null]
+  rating Decimal [not null]
+  pan String [unique, not null]
+  images FutsalImage [not null]
+  userId Int [unique, not null]
+  users users [not null]
+  PriceLists price_lists [not null]
+  Bookings bookings [not null]
+  timeSlots TimeSlots [not null]
+}
+
+Table FutsalImage {
+  id Int [pk, increment]
+  url String [not null]
+  futsalId Int [not null]
+  futsal futsals [not null]
+}
+
+Table price_lists {
+  id Int [pk, increment]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  dayOfWeek String [not null]
+  price Int [not null]
+  futsalId Int [not null]
+  futsals futsals [not null]
+}
+
+Table bookings {
+  id Int [pk, increment]
+  userId Int [not null]
+  users users [not null]
+  futsalId Int [not null]
+  futsals futsals [not null]
+  bookDate DateTime [not null]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  type FutsalType [not null]
+  price Int [not null]
+  confirmation BookingStatus [not null, default: 'Pending']
+  paymentStatus Payment [not null, default: 'Pending']
+}
+
+Table TimeSlots {
+  id Int [pk, increment]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  date DateTime [not null]
+  price Int [not null]
+  futsalType FutsalType [not null]
+  futsalId Int [not null]
+  futsals futsals [not null]
+}
+
+Table MatchRequest {
+  id Int [pk, increment]
+  userId Int [not null]
+  users users [not null]
+  futsalName String [not null]
+  futsalType FutsalType [not null]
+  matchDate DateTime [not null]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  matchType String [not null]
+  status RequestStatus [not null, default: 'Pending']
+}
+
+Table Matches {
+  id Int [pk, increment]
+  futsalName String [not null]
+  futsalType FutsalType [not null]
+  matchType String [not null]
+  matchDate DateTime [not null]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  status MatchStatus [not null, default: 'Scheduled']
+  organizerId Int [not null]
+  organizer users [not null]
+  opponentId Int [not null]
+  opponent users [not null]
+}
+
+Enum FutsalType {
+  FiveA
+  SevenA
+}
+
+Enum Payment {
+  Pending
+  Paid
+}
+
+Enum BookingStatus {
+  Pending
+  Confirmed
+  Cancelled
+}
+
+Enum RequestStatus {
+  Pending
+  Accepted
+  Cancelled
+}
+
+Enum MatchStatus {
+  Cancelled
+  Scheduled
+}
+
+Ref: users.roleId > roles.id
+
+Ref: futsals.userId - users.id
+
+Ref: FutsalImage.futsalId > futsals.id
+
+Ref: price_lists.futsalId > futsals.id
+
+Ref: bookings.userId > users.id
+
+Ref: bookings.futsalId > futsals.id
+
+Ref: TimeSlots.futsalId > futsals.id
+
+Ref: MatchRequest.userId > users.id
+
+Ref: Matches.organizerId > users.id
+
+Ref: Matches.opponentId > users.id
