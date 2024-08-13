@@ -68,59 +68,28 @@ class FutsalController {
     } catch (error) {
       next(error);
     }
-    
   }
+  
+  async getFutsalInfo(req, res, next){
+    const{futsalId}=req.params;
 
-  async getFutsalInfo(req, res, next) {
-    const { futsalId } = req.params;
-  
-    if (!futsalId) {
-      return next(new HttpException(400, 'Futsal ID is required'));
-    }
-  
-    try {
-      const futsal = await prisma.futsals.findUnique({
-        where: { id: parseInt(futsalId, 10) }, 
-      });
-  
-      if (!futsal) {
-        return next(new HttpException(404, 'Futsal not found'));
-      }
-  
-      res.status(200).json({ message: 'Futsal information retrieved successfully', result: futsal });
+    if(!futsalId){
+        return next(new HttpException(400, "Futsal Id is required"))
+    }   
+
+    try{
+        const futsal=await prisma.futsals.findUnique({
+            where:{id:parseInt(futsalId,10)}
+        })
+
+        if (!futsal){
+            return next(new HttpException(404, "futsal not found"))
+        }
+        res.status(200).json({ message: 'Futsal information retrieved successfully', result: futsal });
     } catch (error) {
       next(error);
-    }
+    }    
   }
-
-  async deleteFutsalInfo(req, res, next) {
-    const { id } = req.params; 
-
-    if (!id) {
-      return next(new HttpException(400, 'Futsal ID is required'));
-    }
-
-    try {
-      const futsal = await prisma.futsals.findUnique({
-        where: { id: parseInt(id, 10) }
-      });
-
-      if (!futsal) {
-        return next(new HttpException(404, 'Futsal not found'));
-      }
-
-      await prisma.futsals.delete({
-        where: { id: parseInt(id, 10) }
-      });
-
-      res.status(200).json({ message: 'Futsal information deleted successfully' });
-    } catch (error) {
-      next(error);
-    }
-  }
-  
-
-  
 }
 
 export default new FutsalController();
