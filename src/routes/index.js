@@ -8,4 +8,8 @@ router.post('/login', authController.login);
 
 router.use('/bookings', BookingController);
 
+router.post('/add-futsal-info', authenticateToken, FutsaladdController.addFutsalInfo);
+router.get('/getFutsalInfo/:futsalId', authenticateToken, FutsaladdController.getFutsalInfo);
+router.delete('/deleteFutsalInfo/:id', authenticateToken, FutsaladdController.deleteFutsalInfo);
+
 export default router;
